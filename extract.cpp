@@ -22,11 +22,23 @@ To compile:
 g++ -pipe -Wall -O2 -fPIC -I/usr/local/include/essentia/ -I/usr/local/include/essentia/scheduler/ -I/usr/local/include/essentia/streaming/  -I/usr/local/include/essentia/utils -I/usr/include/taglib -D__STDC_CONSTANT_MACROS standard_mfcc.cpp -o standard_mfcc -L/usr/local/lib -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -ltag -lfftw3f 
 */
 
-#include <iostream>
-#include <fstream>
-#include <essentia/algorithmfactory.h>
-#include <essentia/essentiamath.h>
-#include <essentia/pool.h>
+
+#ifndef BASIC_H
+#define BASIC_H
+	#include <iostream>
+	#include <fstream>
+#endif
+#ifndef ESSENTIA_H
+#define ESSENTIA_H
+	#include <essentia/algorithmfactory.h>
+	#include <essentia/essentiamath.h>
+	#include <essentia/pool.h>
+#endif
+#ifndef FEAT_EXTRACTOR
+#define FEAT_EXTRACTOR
+	#include "./extract.h"
+#endif
+
 //#include "credit_libav.h"
 
 using namespace std;
@@ -147,7 +159,6 @@ void testMethod() {
 }
 
 int main(int argc, char* argv[]) {
-
 	// uncomment below to run testMethod(); exits after completion
 	//testMethod(); return 1;
 	
