@@ -22,7 +22,7 @@ To compile:
 g++ -pipe -Wall -O2 -fPIC -I/usr/local/include/essentia/ -I/usr/local/include/essentia/scheduler/ -I/usr/local/include/essentia/streaming/  -I/usr/local/include/essentia/utils -I/usr/include/taglib -D__STDC_CONSTANT_MACROS standard_mfcc.cpp -o standard_mfcc -L/usr/local/lib -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -ltag -lfftw3f 
 */
 
-
+// include Guards BEGIN
 #ifndef BASIC_H
 	#define BASIC_H
 	#include <iostream>
@@ -41,9 +41,8 @@ g++ -pipe -Wall -O2 -fPIC -I/usr/local/include/essentia/ -I/usr/local/include/es
 	#define FEAT_EXTRACTOR
 	#include "./extract.h"
 #endif
-
 //#include "credit_libav.h"
-
+// include Guards END
 
 // just for debugging and printing the values of a matrix (vector of vectors)
 void printMatrix(vector<vector<Real> > &matrix) {
@@ -110,7 +109,8 @@ void addTransposedToPool(Pool &pool, string originalPoolName, string newPoolName
 
 // method to add new dataset to the pool containing Derivatives;
 // note: we use a transposed MFCC to get all the Delta values 
-// AND we convert all the Delta values to positive (OR else MEAN will mostly be zero overall)
+// AND we convert all the Delta values to positive (we want cumulative changes NOT overall changes)
+// so use addDerivativesToPool(pool, 'somename', 'newname', delta, 1)... to force absolute values
 void addDerivativesToPool(Pool &pool, string transposedMfccPoolName, string mfccDeltaPoolName, Algorithm* delta, int absolute){
 	// Within the pool dataset defined by the name,
 	// No of columns = number of frames computed; No of rows = number of MFCC coefficients
@@ -319,6 +319,7 @@ int main(int argc, char* argv[]) {
 	delete w;
 	delete spec;
 	delete mfcc;
+	delete delta;
 	delete aggr;
 	delete output;
 
