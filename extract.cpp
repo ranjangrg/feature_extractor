@@ -27,7 +27,6 @@ g++ -pipe -Wall -O2 -fPIC -I/usr/local/include/essentia/ -I/usr/local/include/es
 #include <essentia/algorithmfactory.h>
 #include <essentia/essentiamath.h>
 #include <essentia/pool.h>
-//#include <typeinfo> // for finding data-types
 //#include "credit_libav.h"
 
 using namespace std;
@@ -74,7 +73,6 @@ void addMatrixToPool(Pool &pool, vector<vector<Real> > &matrix, string name) {
 // prints all the values from the pool with the given group name
 // example: printPool (pool, "lowlevel.mfcc");
 void printPool(Pool &pool, string name) {
-	// testing pool vector
 	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name); 
 	cout << "Pool values for \"" << name << "\"" << endl;
 	for (long unsigned idx = 0; idx < values.size(); ++idx) {
@@ -107,7 +105,7 @@ int main(int argc, char* argv[]) {
 	if (argc != 3) {
 		cout << "Error: incorrect number of arguments." << endl;
 		cout << "Usage: " << argv[0] << " audio_input yaml_output(file)" << endl;
-		//    creditLibAV();
+		//creditLibAV();
 		exit(1);
 	}
 
@@ -121,12 +119,11 @@ int main(int argc, char* argv[]) {
 	Pool pool;
 
 	/////// PARAMS //////////////
-	int sampleRate = 32052;
-	int frameSize = (int)(sampleRate/2);
-	int hopSize = (int)(sampleRate/4);
-	int nCoeff = 12;
-	string mfccInputSpectrumType = "magnitude";
-//	string mfccInputSpectrumType = "power";
+	int sampleRate = 32052;						// sample rate of the audio signal
+	int frameSize = (int)(sampleRate/2);		// size of a frame for FrameCutter
+	int hopSize = (int)(sampleRate/4);			// hop size for FrameCutter
+	int nCoeff = 12;							// number of MFCC coefficients
+	string mfccInputSpectrumType = "magnitude"; // normally spectrum() produces a magnitude spectrum
 
 	// we want to compute the MFCC of a file: we need the create the following:
 	// audioloader -> framecutter -> windowing -> FFT -> MFCC
@@ -187,9 +184,7 @@ int main(int argc, char* argv[]) {
 
 	audio->compute();
 	
-	// creating a 2d vector to hold the mfccs (transposed)
-	vector<vector<Real> > mfccTranMatrix (nCoeff); // holds nCoeff number of vectors
-	long unsigned currentFrameCount = 0;
+	long unsigned currentFrameCount = 0;	// variable to keep track of number of frames
 
 	while (true) {
 		// compute a frame
@@ -214,7 +209,10 @@ int main(int argc, char* argv[]) {
 	}
 	
 	long unsigned totalFrameCount = currentFrameCount; // this variable now holds number of frames processed
+	
+	// creating a 2d vector to hold the mfccs (transposed)
 	// Pool with value "lowlevel.mfcc" now has the mfcc values; we transpose that pool segment
+	vector<vector<Real> > mfccTranMatrix (nCoeff); // this matrix will hold 'nCoeff' number of vectors
 	mfccTranMatrix = transpose(pool.value <vector<vector<Real> > >("lowlevel.mfcc"));
 	addMatrixToPool(pool, mfccTranMatrix, "lowlevel.mfccT");
 //	printPool (pool, "lowlevel.mfcc");
@@ -253,13 +251,9 @@ int main(int argc, char* argv[]) {
 //	for (int idx = 0; idx < nCoeff; ++idx) {
 //		vector<Real> poolMfccDelta = pool.value <vector <vector <Real> > > ("lowlevel.mfccDelta")[idx]; 
 	// this is how we get value from pool
-		
-	// DELETE ME: just finding out data types
-	//cout << typeid(mfcc).name() << endl;
 
 	// aggregate the results
 	Pool aggrPool; // the pool with the aggregated MFCC values
-//	const char* stats[] = { "mean", "var", "stdev" };
 	const char* stats[] = { "mean", "stdev" };
 //	const char* stats[] = { "copy" };
 
