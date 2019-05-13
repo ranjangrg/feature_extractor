@@ -53,7 +53,7 @@ vector<vector<Real> > transpose(vector<vector<Real> > &matrix)   {
 }
 
 // makes all the values within the matrix (of Reals) to positive
-void getAbsolute(vector<vector<Real> > &matrix) {
+void makeAbsolute(vector<vector<Real> > &matrix) {
 	for (unsigned int row = 0; row < matrix.size(); ++row) {
 		unsigned int columnSize = matrix[row].size();
 		for (unsigned int col = 0; col < columnSize; ++col) {
@@ -70,13 +70,63 @@ void addMatrixToPool(Pool &pool, vector<vector<Real> > &matrix, string name) {
 	}
 }
 
+// Within a given pool, the method transposes data (referenced by a given poolName)
+// and stores the transposed data within the same pool using a new name
+// note: MUST have same number of columns throughout all rows
+void addTransposedToPool(Pool &pool, string originalPoolName, string newPoolName) {
+	unsigned long int nColumns = pool.value <vector<vector<Real> > >(originalPoolName)[0].size();	// it MUST have at least one vector
+	vector<vector<Real> > transposedMatrix (nColumns); 
+	transposedMatrix = transpose(pool.value <vector<vector<Real> > >(originalPoolName));
+	addMatrixToPool(pool, transposedMatrix, newPoolName);
+}
+
+
+// returns the vector at the given index within a given pool with name poolName
+vector<Real> getValuesFromPoolAt(Pool &pool, unsigned long int idx, string poolName) {
+	return pool.value <vector<vector<Real> > >(poolName)[idx];
+}
+
+// method to add new dataset to the pool containing Derivatives;
+// note: we use a transposed MFCC to get all the Delta values 
+// AND we convert all the Delta values to positive (OR else MEAN will mostly be zero overall)
+void addDerivativesToPool(Pool &pool, string transposedMfccPoolName, string mfccDeltaPoolName, Algorithm* delta, int absolute){
+	// Within the pool dataset defined by the name,
+	// No of columns = number of frames computed
+	// No of rows = number of MFCC coefficients
+	unsigned int totalFrameCount = pool.value <vector<vector<Real> > > (transposedMfccPoolName)[0].size();
+	unsigned int nCoeff = pool.value <vector<vector<Real> > > (transposedMfccPoolName).size();
+
+	vector<vector<Real> > deltaValuesMatrix (totalFrameCount);	// holds as many vectors as the number of frames
+	vector<Real> deltaValues, deltaMfcc;				// temporary cache vectors
+	for (unsigned int idx = 0; idx < nCoeff; ++idx) {
+		// use TRANSPOSED mfcc list; with each loop iterates through each MFCC (1st, 2nd, etc.)
+		deltaValues = getValuesFromPoolAt(pool, idx, transposedMfccPoolName);	
+		delta->input("signal").set(deltaValues);// setting as input, the current MFCC we are working on
+		delta->output("signal").set(deltaMfcc);	// setting output
+		delta->compute();			// compute Derivative for current MFCC using the input and output
+
+		// at this point, variable 'deltaMfcc' holds the derivative of the current MFCC coefficient		
+		// pushing each mfccDelta to the main Delta matrix now
+		for (long unsigned int jdx = 0; jdx < deltaMfcc.size(); ++jdx) {
+			if (absolute == 0) {
+				deltaValuesMatrix[jdx].push_back( deltaMfcc[jdx] );	// converting to positive numbers
+			} else {
+				deltaValuesMatrix[jdx].push_back( fabs(deltaMfcc[jdx]) );
+			}
+		}
+	}	
+	// making all delta values positive; 
+	//makeAbsolute(deltaValuesMatrix);	// if we want to converting the whole matrix to positive at the end
+	addMatrixToPool(pool, deltaValuesMatrix, mfccDeltaPoolName);
+}
+
 // prints all the values from the pool with the given group name
 // example: printPool (pool, "lowlevel.mfcc");
 void printPool(Pool &pool, string name) {
 	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name);	// a way to get values from Pool
 	cout << "Pool values for \"" << name << "\"" << endl;
 	for (long unsigned idx = 0; idx < values.size(); ++idx) {
-		cout << values[idx] << endl;
+		cout << getValuesFromPoolAt(pool, idx, name) << endl;
 	}	
 }
 
@@ -92,7 +142,7 @@ void testMethod() {
 	printMatrix(matrix);
 	
 	vector<vector<Real> > absMatrix;
-	getAbsolute(matrix);
+	makeAbsolute(matrix);
 	cout << "After" << endl;	
 	printMatrix(matrix);
 }
@@ -124,6 +174,11 @@ int main(int argc, char* argv[]) {
 	int hopSize = (int)(sampleRate/4);		// hop size for FrameCutter
 	int nCoeff = 12;				// number of MFCC coefficients
 	string mfccInputSpectrumType = "magnitude"; 	// normally spectrum() produces a magnitude spectrum
+	
+	// Following are the names given to the dataset within the pool; same will be used on output
+	string mfccPoolName = "lowlevel.mfcc";
+	string transposedMfccPoolName = "temp.transposedMFCC";
+	string mfccDeltaPoolName = "lowlevel.mfccDelta";
 
 	// we want to compute the MFCC of a file: we need the create the following:
 	// audioloader -> framecutter -> windowing -> FFT -> MFCC
@@ -203,59 +258,66 @@ int main(int argc, char* argv[]) {
 		mfcc->compute();
 
 		// "pool.add" adds mfccs of each frame to the pool
-		pool.add("lowlevel.mfcc", mfccCoeffs);
+		pool.add(mfccPoolName, mfccCoeffs);
 				
 		currentFrameCount++; // increment the current frame index
 	}
 	
 	long unsigned totalFrameCount = currentFrameCount; // this variable now holds number of frames processed
 	
-	// creating a 2d vector to hold the mfccs (transposed)
-	// Pool with value "lowlevel.mfcc" now has the mfcc values; we transpose that pool segment
-	vector<vector<Real> > mfccTranMatrix (nCoeff); // this matrix will hold 'nCoeff' number of vectors
-	mfccTranMatrix = transpose(pool.value <vector<vector<Real> > >("lowlevel.mfcc"));
-	addMatrixToPool(pool, mfccTranMatrix, "lowlevel.mfccT");
-//	printPool (pool, "lowlevel.mfcc");
-//	printPool (pool, "lowlevel.mfccT");
+	// transpose the MFCC data within the pool and store as a new dataset
+	addTransposedToPool(pool, mfccPoolName, transposedMfccPoolName);
+
+	/* Uncomment below to print pool values	
+	printPool (pool, mfccPoolName);
+	*/
+	printPool (pool, transposedMfccPoolName);
+	/*
+	*/
+
+	/////////// Calculating Derivative of each MFCC coefficient //////////////////
 	
 	// Computing the Derivative of each MFCC (note: using transposed MFCC list)
 	// It is so because, if we are calculating means of MFCCs, we want mean of the
 	// matching MFCCs (i.e. mean of 1st MFCCs, mean of 2nd MFCCs .. NOT mean of 
 	// MFCCs from the first frame, mean of the MFCCs from the second frame etc.)
-
-	/////////// Calculating Derivative of each MFCC coefficient //////////////////
-	vector<vector<Real> > deltaValueList (totalFrameCount); // holds as many vectors as the number of frames
-	vector<Real> deltaValues, deltaMfcc;
-	for (int idx = 0; idx < nCoeff; ++idx) {
-		deltaValues = mfccTranMatrix[idx]; 	// use TRANSPOSED mfcc list; with each loop iterates through each MFCC (1st, 2nd, etc.)
-		delta->input("signal").set(deltaValues);// setting as input, the current MFCC we are working on
-		delta->output("signal").set(deltaMfcc);	// setting output
-		delta->compute();			// compute Derivative for current MFCC using the input and output
-
-		// at this point, variable 'deltaMfcc' holds the derivative of the current MFCC coefficient		
-		// pushing each mfccDelta to the main Delta matrix now
-		for (long unsigned int jdx = 0; jdx < deltaMfcc.size(); ++jdx) {
-			deltaValueList[jdx].push_back(deltaMfcc[jdx]);
-		}
-	}
 	
-	// making all delta values positive; note: probably more efficient to 
-	// just make values positive within the loop above in line: 
-	// deltaValueList[jdx].push_back(deltaMfcc[jdx]); 
-	// TO deltaValueList[jdx].push_back( fabs(deltaMfcc[jdx]) );
-	getAbsolute(deltaValueList);
+//	vector<vector<Real> > deltaValuesMatrix (totalFrameCount); // holds as many vectors as the number of frames
+//	vector<Real> deltaValues, deltaMfcc;
+//	for (int idx = 0; idx < nCoeff; ++idx) {
+//		deltaValues = getValuesFromPoolAt(pool, idx, transposedMfccPoolName);	// use TRANSPOSED mfcc list; with each loop iterates through each MFCC (1st, 2nd, etc.)
+//		delta->input("signal").set(deltaValues);// setting as input, the current MFCC we are working on
+//		delta->output("signal").set(deltaMfcc);	// setting output
+//		delta->compute();			// compute Derivative for current MFCC using the input and output
+
+//		// at this point, variable 'deltaMfcc' holds the derivative of the current MFCC coefficient		
+//		// pushing each mfccDelta to the main Delta matrix now
+//		for (long unsigned int jdx = 0; jdx < deltaMfcc.size(); ++jdx) {
+//			deltaValuesMatrix[jdx].push_back(deltaMfcc[jdx]);
+//		}
+//	}
+//	
+//	// making all delta values positive; 
+//		/* 
+//		Note: probably more efficient to just make values positive 
+//		within the loop above in line: 
+//		 deltaValuesMatrix[jdx].push_back(deltaMfcc[jdx]); 
+//		 TO deltaValuesMatrix[jdx].push_back( fabs(deltaMfcc[jdx]) );
+//		*/
+//	makeAbsolute(deltaValuesMatrix);
+//	addMatrixToPool(pool, deltaValuesMatrix, mfccDeltaPoolName);	
 	
-	for (long unsigned int idx = 0; idx < deltaValueList.size(); ++idx) {
-		pool.add("lowlevel.mfccDelta", deltaValueList[idx]);
-	}
+	addDerivativesToPool(pool, transposedMfccPoolName, mfccDeltaPoolName, delta, 1);	// use absolute values
+	
+	pool.remove(transposedMfccPoolName);	// deleting temporary dataset within pool
 
 	// aggregate the results
 	Pool aggrPool;	// the pool with the aggregated MFCC values
 	const char* stats[] = { "mean", "stdev" };
 //	const char* stats[] = { "copy" };
 
-	Algorithm* aggr = AlgorithmFactory::create( "PoolAggregator",
-												"defaultStats", arrayToVector<string>(stats));
+	Algorithm* aggr = AlgorithmFactory::create(	"PoolAggregator",
+							"defaultStats", arrayToVector<string>(stats));
 
 	aggr->input("input").set(pool);
 	aggr->output("output").set(aggrPool);
@@ -265,7 +327,7 @@ int main(int argc, char* argv[]) {
 	cout << "-------- writing results to file " << outputFilename << " ---------" << endl;
 
 	Algorithm* output = AlgorithmFactory::create(	"YamlOutput",
-													"filename", outputFilename);
+							"filename", outputFilename);
 	output->input("pool").set(aggrPool);
 	output->compute();
 
