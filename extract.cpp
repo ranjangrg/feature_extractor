@@ -232,14 +232,17 @@ int main(int argc, char* argv[]) {
 		delta->output("signal").set(deltaMfcc);	// setting output
 		delta->compute();			// compute Derivative for current MFCC using the input and output
 
-		// at this point, variable 'deltaMfcc' holds the first derivative of the current MFCC coefficient		
+		// at this point, variable 'deltaMfcc' holds the derivative of the current MFCC coefficient		
 		// pushing each mfccDelta to the main Delta matrix now
 		for (long unsigned int jdx = 0; jdx < deltaMfcc.size(); ++jdx) {
 			deltaValueList[jdx].push_back(deltaMfcc[jdx]);
 		}
 	}
 	
-	// making all delta values positive
+	// making all delta values positive; note: probably more efficient to 
+	// just make values positive within the loop above in line: 
+	// deltaValueList[jdx].push_back(deltaMfcc[jdx]); 
+	// TO deltaValueList[jdx].push_back( fabs(deltaMfcc[jdx]) );
 	getAbsolute(deltaValueList);
 	
 	for (long unsigned int idx = 0; idx < deltaValueList.size(); ++idx) {
