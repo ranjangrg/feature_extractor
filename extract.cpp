@@ -73,7 +73,7 @@ void addMatrixToPool(Pool &pool, vector<vector<Real> > &matrix, string name) {
 // prints all the values from the pool with the given group name
 // example: printPool (pool, "lowlevel.mfcc");
 void printPool(Pool &pool, string name) {
-	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name); 
+	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name);	// a way to get values from Pool
 	cout << "Pool values for \"" << name << "\"" << endl;
 	for (long unsigned idx = 0; idx < values.size(); ++idx) {
 		cout << values[idx] << endl;
@@ -119,11 +119,11 @@ int main(int argc, char* argv[]) {
 	Pool pool;
 
 	/////// PARAMS //////////////
-	int sampleRate = 32052;						// sample rate of the audio signal
+	int sampleRate = 32052;				// sample rate of the audio signal
 	int frameSize = (int)(sampleRate/2);		// size of a frame for FrameCutter
-	int hopSize = (int)(sampleRate/4);			// hop size for FrameCutter
-	int nCoeff = 12;							// number of MFCC coefficients
-	string mfccInputSpectrumType = "magnitude"; // normally spectrum() produces a magnitude spectrum
+	int hopSize = (int)(sampleRate/4);		// hop size for FrameCutter
+	int nCoeff = 12;				// number of MFCC coefficients
+	string mfccInputSpectrumType = "magnitude"; 	// normally spectrum() produces a magnitude spectrum
 
 	// we want to compute the MFCC of a file: we need the create the following:
 	// audioloader -> framecutter -> windowing -> FFT -> MFCC
@@ -131,24 +131,24 @@ int main(int argc, char* argv[]) {
 	AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
 
 	Algorithm* audio = factory.create(	"MonoLoader",
-										"filename", audioFilename,
-										"sampleRate", sampleRate);
+						"filename", audioFilename,
+						"sampleRate", sampleRate);
 										
 	Algorithm* fc    = factory.create(	"FrameCutter",
-										"frameSize", frameSize,
-										"hopSize", hopSize,
-										"startFromZero", true,
-										"lastFrameToEndOfFile", true);
+						"frameSize", frameSize,
+						"hopSize", hopSize,
+						"startFromZero", true,
+						"lastFrameToEndOfFile", true);
 
 	Algorithm* w     = factory.create(	"Windowing",
-										"type", "hann");
+						"type", "hann");
 
 	Algorithm* spec  = factory.create(	"Spectrum"); // produces a magnitude spectrum (NOT power)
 	Algorithm* mfcc  = factory.create(	"MFCC",
-										"numberCoefficients", nCoeff,
-										"sampleRate", sampleRate,
-										"inputSize", hopSize+1,
-										"type", mfccInputSpectrumType); // specify type of input spectrum
+						"numberCoefficients", nCoeff,
+						"sampleRate", sampleRate,
+						"inputSize", hopSize+1,
+						"type", mfccInputSpectrumType); // specify type of input spectrum
 					
 	Algorithm* delta = factory.create("Derivative");
 
@@ -227,13 +227,12 @@ int main(int argc, char* argv[]) {
 	vector<vector<Real> > deltaValueList (totalFrameCount); // holds as many vectors as the number of frames
 	vector<Real> deltaValues, deltaMfcc;
 	for (int idx = 0; idx < nCoeff; ++idx) {
-		deltaValues = mfccTranMatrix[idx]; 			// use TRANSPOSED mfcc list; with each loop iterates through each MFCC (1st, 2nd, etc.)
-		delta->input("signal").set(deltaValues);	// setting as input, the current MFCC we are working on
-		delta->output("signal").set(deltaMfcc);		// setting output
-		delta->compute();							// compute Derivative for current MFCC using the input and output
-		
-		// at this point, variable 'deltaMfcc' holds the first derivative of the current MFCC coefficient
-		
+		deltaValues = mfccTranMatrix[idx]; 	// use TRANSPOSED mfcc list; with each loop iterates through each MFCC (1st, 2nd, etc.)
+		delta->input("signal").set(deltaValues);// setting as input, the current MFCC we are working on
+		delta->output("signal").set(deltaMfcc);	// setting output
+		delta->compute();			// compute Derivative for current MFCC using the input and output
+
+		// at this point, variable 'deltaMfcc' holds the first derivative of the current MFCC coefficient		
 		// pushing each mfccDelta to the main Delta matrix now
 		for (long unsigned int jdx = 0; jdx < deltaMfcc.size(); ++jdx) {
 			deltaValueList[jdx].push_back(deltaMfcc[jdx]);
@@ -246,14 +245,9 @@ int main(int argc, char* argv[]) {
 	for (long unsigned int idx = 0; idx < deltaValueList.size(); ++idx) {
 		pool.add("lowlevel.mfccDelta", deltaValueList[idx]);
 	}
-	
-	// testing pool vector
-//	for (int idx = 0; idx < nCoeff; ++idx) {
-//		vector<Real> poolMfccDelta = pool.value <vector <vector <Real> > > ("lowlevel.mfccDelta")[idx]; 
-	// this is how we get value from pool
 
 	// aggregate the results
-	Pool aggrPool; // the pool with the aggregated MFCC values
+	Pool aggrPool;	// the pool with the aggregated MFCC values
 	const char* stats[] = { "mean", "stdev" };
 //	const char* stats[] = { "copy" };
 
