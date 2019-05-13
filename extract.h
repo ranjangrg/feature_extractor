@@ -1,7 +1,7 @@
 #ifndef FEAT_EXTRACTOR
 	#define FEAT_EXTRACTOR
 	#ifndef BASIC_H
-	#define BASIC_H
+		#define BASIC_H
 		#include <iostream>
 		#include <fstream>
 	#endif
@@ -10,6 +10,9 @@
 		#include <essentia/algorithmfactory.h>
 		#include <essentia/essentiamath.h>
 		#include <essentia/pool.h>
+		using namespace std;
+		using namespace essentia;
+		using namespace essentia::standard;
 	#endif
 
 	// just for debugging and printing the values of a matrix (vector of vectors)

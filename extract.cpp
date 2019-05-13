@@ -24,26 +24,26 @@ g++ -pipe -Wall -O2 -fPIC -I/usr/local/include/essentia/ -I/usr/local/include/es
 
 
 #ifndef BASIC_H
-#define BASIC_H
+	#define BASIC_H
 	#include <iostream>
 	#include <fstream>
 #endif
 #ifndef ESSENTIA_H
-#define ESSENTIA_H
+	#define ESSENTIA_H
 	#include <essentia/algorithmfactory.h>
 	#include <essentia/essentiamath.h>
 	#include <essentia/pool.h>
+	using namespace std;
+	using namespace essentia;
+	using namespace essentia::standard;
 #endif
 #ifndef FEAT_EXTRACTOR
-#define FEAT_EXTRACTOR
+	#define FEAT_EXTRACTOR
 	#include "./extract.h"
 #endif
 
 //#include "credit_libav.h"
 
-using namespace std;
-using namespace essentia;
-using namespace essentia::standard;
 
 // just for debugging and printing the values of a matrix (vector of vectors)
 void printMatrix(vector<vector<Real> > &matrix) {
