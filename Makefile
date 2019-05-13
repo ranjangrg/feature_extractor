@@ -25,11 +25,11 @@ INCLUDES+= -D__STDC_CONSTANT_MACROS
 
 LDPATH+= -L/usr/local/lib
 
-EXECUTABLE_1=extract
+EXECUTABLE_1=extract.out
 
 SOURCES_1=extract.cpp
 
-OBJECTS=$(SOURCES:.c=.o)
+OBJECTS=$(SOURCES:.cpp=.o)
 
 .PHONY: extract
 	
