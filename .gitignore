@@ -2,4 +2,4 @@
 *.out
 
 # Outputfile
-test.txt
+./output/*
