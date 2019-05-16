@@ -1,5 +1,5 @@
 # feature_extractor
-Source code for a program that can extract various audio features
+Source code for a program that can extract various audio features (uses Essentia library)
 
 # Dependencies
-Essentia library
+Essentia library (including Essentia's dependencies)
