@@ -26,19 +26,19 @@ INCLUDES+= -D__STDC_CONSTANT_MACROS
 LDPATH+= -L/usr/local/lib
 
 EXECUTABLE_1=extract.out
-EXECUTABLE_2=streamReader.out
+EXECUTABLE_2=analyseAudio.out
 
 SOURCES_1=extract.cpp
-SOURCES_2=streamReader.cpp
+SOURCES_2=analyseAudio.c
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
 .PHONY: extract
 
-extract: $(SOURCES_EXT1)
+extract: $(SOURCES_1)
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_1) -g -o $(EXECUTABLE_1) $(LDFLAGS) # -g for debugging options in gdb
 
-streamReader: $(SOURCES_EXT1)
+analyseAudio: $(SOURCES_2)
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_2) -g -o $(EXECUTABLE_2) $(LDFLAGS) # -g for debugging options in gdb
 
 clean:
