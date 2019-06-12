@@ -31,9 +31,8 @@ EXECUTABLE_2=analyseAudio.out
 SOURCES_1=extract.cpp
 SOURCES_2=analyseAudio.c
 
-OBJECTS=$(SOURCES:.cpp=.o)
-
-.PHONY: extract
+OBJECTS_1=extract.o
+OBJECTS_2=analyseAudio.o
 
 extract: $(SOURCES_1)
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_1) -g -o $(EXECUTABLE_1) $(LDFLAGS) # -g for debugging options in gdb
@@ -41,6 +40,7 @@ extract: $(SOURCES_1)
 analyseAudio: $(SOURCES_2)
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_2) -g -o $(EXECUTABLE_2) $(LDFLAGS) # -g for debugging options in gdb
 
+.PHONY: clean
 clean:
 	# quiet clean-up
 	-@rm $(EXECUTABLE_1)  2> /dev/null || true;
