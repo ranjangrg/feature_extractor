@@ -2,6 +2,7 @@
 	#include "analyseAudio.h"
 #endif
 
+// just for testing
 void testArray() {
 	const int ARRAY_SIZE = 16;
         double *numbers = (double *) malloc(sizeof(double) * ARRAY_SIZE);
@@ -18,8 +19,11 @@ void testArray() {
         free(numbers);
 }
 
+
+
 int main() {
-	testArray();
+	// Testing method
+	//testArray();
 
 	return 1;
 }
