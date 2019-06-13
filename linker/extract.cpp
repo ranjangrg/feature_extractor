@@ -42,17 +42,19 @@ vector<Real> getValuesFromPoolAt(Pool &pool, unsigned long int idx, string poolN
 	return pool.value <vector<vector<Real> > >(poolName)[idx];
 }
 
-// prints all the values from the pool with the given group name
-// example: printPool (pool, "lowlevel.mfcc");
-void printPool(Pool &pool, string name) {
-	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name);	// a way to get values from Pool
-	cout << "Pool values for \"" << name << "\"" << endl;
-	for (long unsigned idx = 0; idx < values.size(); ++idx) {
-		cout << getValuesFromPoolAt(pool, idx, name) << endl;
+// 2D-Real vectors ONLY: prints all the values from the pool with the given group name
+// example: printPool2DReal (pool, "lowlevel.mfcc");
+void printPool2DReal(Pool &pool, string name) {
+	long unsigned size = pool.value <vector<vector<Real> > >(name).size();	// Find no of rows in the pool for that set
+	cout << "Pool values for \"" << name << "\":" << endl;
+	for (long unsigned idx = 0; idx < size; ++idx) {
+		cout << pool.value <vector<vector<Real> > >(name)[idx] << endl;	// print the current row
 	}	
 }
 
-
+void printPoolSingleReal(Pool &pool, string name) {
+	cout << "Pool value for \"" << name << "\": " << pool.value<vector<Real> >(name) << endl;
+}
 
 //=========================================
 // Creating and managing extractor class ||
@@ -87,7 +89,9 @@ void FeatureExtractor::computeWhole() {
 	audio->compute();
 	
 	energy->compute();	// calculating total energy in signal
-	cout << "Total energy is " << totalEnergy << endl;
+	pool.add("totalEnergy", totalEnergy);
+	printPoolSingleReal(pool, "totalEnergy");
+//	cout << "Total energy is " << pool.value<vector<Real> >("totalEnergy") << endl;
 	
 	long unsigned currentFrameCount = 0;	// variable to keep track of number of frames
 
@@ -112,7 +116,9 @@ void FeatureExtractor::computeWhole() {
 				
 		currentFrameCount++; // increment the current frame index
 	}
-	printPool(pool, "mfcc");
+//	cout << "mfcc is " << pool.value<vector<vector<Real> > >("mfcc") << endl;
+	printPool2DReal(pool, "mfcc");
+//	printPool2DReal(pool, "totalEnergy");
 }
 
 // Constructor - init
