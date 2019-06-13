@@ -15,12 +15,6 @@
 		using namespace essentia::standard;
 	#endif
 
-	// just for debugging and printing the values of a matrix (vector of vectors)
-	void printMatrix(vector<vector<Real> > &matrix);
-
-	// Modify per will 
-	void testMethod();	
-	
 	// testing Essentia class
 	class FeatureExtractor {
 	    public:
@@ -37,15 +31,15 @@
 		Pool pool;		// used to store values esp output(s)
 		
 		// AlgorithmFactory factory;
-		Algorithm* audio;	// audio algorithm factory
-		Algorithm* fc;		// frame cutter algorithm factory
-		Algorithm* w;		// windower algorithm factory
-		Algorithm* spec;	// spectrum algorithm factory
-		Algorithm* mfcc;	// mfcc algorithm factory
-		Algorithm* delta;	// delta algorithm factory
-		Algorithm* energy;	// energy algorithm factory
-		Algorithm* sct;		// spectral centroid time algortihm factory
-		Algorithm* pitchY;	// PitchYin algorithm factory; NOTE: takes quite a while to process
+		Algorithm* audioF;	// audio algorithm factory
+		Algorithm* fcF;		// frame cutter algorithm factory
+		Algorithm* wF;		// windower algorithm factory
+		Algorithm* specF;	// spectrum algorithm factory
+		Algorithm* mfccF;	// mfcc algorithm factory
+		Algorithm* deltaF;	// delta algorithm factory
+		Algorithm* energyF;	// energy algorithm factory
+		Algorithm* sctF;	// spectral centroid time algortihm factory
+		Algorithm* pitchYF;	// PitchYin algorithm factory; NOTE: takes quite a while to process
 		
 		// Constructors and Destructors
 		FeatureExtractor();

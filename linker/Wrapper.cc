@@ -3,21 +3,7 @@
 #endif
 #include "./Wrapper.h"
 
-extern "C" {
-	void testInC() {
-		int value = 900;
-		printf("Running CPP code now\n");
-		testMethod();
-		printf("Ending CPP code now\n");
-	}
-	
-	void testClass() {
-		FeatureExtractor* fex = new FeatureExtractor(); // dynamic object; need to delete after use
-		fex->display();
-		fex->computeWhole();
-		delete fex;
-	}
-	
+extern "C" {	
 	// Create new FeatureExtractor object
 	FeatureExtractor* newFeatureExtractor(){
 		return new FeatureExtractor();
