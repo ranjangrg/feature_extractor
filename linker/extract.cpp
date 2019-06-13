@@ -17,6 +17,7 @@ void printMatrix(vector<vector<Real> > &matrix) {
 
 // Modify per will
 void testMethod() {
+	/*
 	vector<Real> row0 = {-1,-2,-3};
 	vector<Real> row1 = {-4,-5.2,-6};
 	vector<Real> row2 = {-7,-8,-9};
@@ -30,4 +31,137 @@ void testMethod() {
 	//makeAbsolute(matrix);
 	cout << "After" << endl;	
 	printMatrix(matrix);
+	*/
+}
+
+//=========================================
+//   Handle and display "Pool" methods   ||
+//=========================================
+// returns the vector at the given index within a given pool with name poolName
+vector<Real> getValuesFromPoolAt(Pool &pool, unsigned long int idx, string poolName) {
+	return pool.value <vector<vector<Real> > >(poolName)[idx];
+}
+
+// prints all the values from the pool with the given group name
+// example: printPool (pool, "lowlevel.mfcc");
+void printPool(Pool &pool, string name) {
+	vector<vector<Real> > values = pool.value <vector<vector<Real> > > (name);	// a way to get values from Pool
+	cout << "Pool values for \"" << name << "\"" << endl;
+	for (long unsigned idx = 0; idx < values.size(); ++idx) {
+		cout << getValuesFromPoolAt(pool, idx, name) << endl;
+	}	
+}
+
+
+
+//=========================================
+// Creating and managing extractor class ||
+//=========================================
+
+// connects relevant factories i.e. set input, output etc.
+void FeatureExtractor::connectFactories() {
+	audio->output("audio").set(audioBuffer);
+	
+	// audioBuffer -> Total energy
+	energy->input("array").set(audioBuffer);
+	energy->output("energy").set(totalEnergy);
+	
+	// FrameCutter -> Windowing -> Spectrum
+	fc->input("signal").set(audioBuffer);
+	fc->output("frame").set(frame);
+	
+	w->input("frame").set(frame);
+	w->output("frame").set(windowedFrame);
+	
+	spec->input("frame").set(windowedFrame);
+	spec->output("spectrum").set(spectrum);
+	
+	// Spectrum -> MFCC
+	mfcc->input("spectrum").set(spectrum);
+	mfcc->output("bands").set(mfccBands);
+	mfcc->output("mfcc").set(mfccCoeffs);
+}
+
+// compute Algorithms
+void FeatureExtractor::computeWhole() {
+	audio->compute();
+	
+	energy->compute();	// calculating total energy in signal
+	cout << "Total energy is " << totalEnergy << endl;
+	
+	long unsigned currentFrameCount = 0;	// variable to keep track of number of frames
+
+	while (true) {
+		// compute a frame
+		fc->compute();
+
+		// if it was the last one (ie: it was empty), then we're done.
+		if (!frame.size()) {
+			break;
+		}
+
+		// if the frame is silent, just drop it and go on processing
+		if (isSilent(frame)) continue;
+
+		w->compute();
+		spec->compute();
+		mfcc->compute();
+
+		// "pool.add" adds mfccs of each frame to the pool
+		pool.add("mfcc", mfccCoeffs);
+				
+		currentFrameCount++; // increment the current frame index
+	}
+	printPool(pool, "mfcc");
+}
+
+// Constructor - init
+FeatureExtractor::FeatureExtractor() {
+	cout << "Initialising FeatureExtractor" << endl;
+	essentia::init();
+	sampleRate = 32052;
+	frameSize = (int)(sampleRate/2);
+	hopSize = (int)(sampleRate/4); 
+	nMFCCCoeff = 12; 
+	AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
+	audio = factory.create(	"MonoLoader",
+				"filename", "../audio/sound.flac",
+				"sampleRate", sampleRate);
+	fc    = factory.create(	"FrameCutter",
+				"frameSize", frameSize,
+				"hopSize", hopSize,
+				"startFromZero", true,
+				"lastFrameToEndOfFile", true);
+	w     = factory.create(	"Windowing",
+				"type", "hann");
+	spec  = factory.create(	"Spectrum"); // produces a magnitude spectrum (NOT power)
+	mfcc  = factory.create(	"MFCC",
+				"numberCoefficients", nMFCCCoeff,
+				"sampleRate", sampleRate,
+				"inputSize", hopSize+1,
+				"type", "magnitude"); // specify type of input spectrum				
+	delta = factory.create("Derivative");
+	energy = factory.create("Energy");
+	
+	connectFactories();	// connect all the factories and algorithms here
+}
+
+// Destructor - free memory-allocated while running
+FeatureExtractor::~FeatureExtractor() {
+	delete audio;
+	delete fc;
+	delete w;
+	delete spec;
+	delete mfcc;
+	delete delta;
+	cout << "Destroying FeatureExtractor" << endl;
+	essentia::shutdown();
+}
+
+// display contents of extractor
+void FeatureExtractor::display( void ) {
+	cout << "sampleRate\t: " << sampleRate << endl;
+	cout << "frameSize\t: " << frameSize << endl;
+	cout << "hopSize\t\t: " << hopSize << endl;
+	cout << "nCoeff\t\t: " << nMFCCCoeff << endl;
 }

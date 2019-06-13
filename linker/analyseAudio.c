@@ -20,10 +20,12 @@ void testArray() {
 
 
 
-int main() {
-	// Testing method
-	//testArray();
-	testInC();
-
+int main() { 	
+ 	// Testing load and unload of Essentia
+/*	testClass();*/
+ 	FeatureExtractor* fex = newFeatureExtractor();
+ 	displayFeatureExtractor(fex);
+ 	computeFeatureExtractor(fex);
+ 	destroyFeatureExtractor(fex);
 	return 1;
 }

@@ -32,30 +32,32 @@ EXECUTABLE_2=analyseAudio.out
 
 SOURCE_1=extract.cpp
 HEADER_1=extract.h
-SOURCE_2=analyseAudio.c
-HEADER_2=analyseAudio.h
-SOURCE_3=Wrapper.cc
-HEADER_3=Wrapper.h
+SOURCE_2=Wrapper.cc
+HEADER_2=Wrapper.h
+SOURCE_3=analyseAudio.c
+HEADER_3=analyseAudio.h
 
 OBJECT_1=extract.o
-OBJECT_2=analyseAudio.o
-OBJECT_3=Wrapper.o
+OBJECT_2=Wrapper.o
+OBJECT_3=analyseAudio.o
 
 # extract.o
 $(OBJECT_1): $(SOURCE_1) $(HEADER_1)
-	g++ -c $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $@ $(LDFLAGS) # -g for debugging options in gdb
-
-# analyseAudio.o
-$(OBJECT_2): $(SOURCE_2) $(HEADER_2)
-	gcc -c $(CFLAGS) $(SOURCE_2) -g -o $@ # -g for debugging options in gdb
+#	g++ -c $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $@ $(LDFLAGS) # -g for debugging options in gdb
+	g++ -c $(CFLAGS) $(INCLUDES) $(SOURCE_1) -g -o $@ # -g for debugging options in gdb
 
 # wrapper.o
+$(OBJECT_2): $(SOURCE_2) $(HEADER_2)
+	g++ -c $(SOURCE_2) -o $(OBJECT_2)
+
+# analyseAudio.o
 $(OBJECT_3): $(SOURCE_3) $(HEADER_3)
-	g++ -c $(SOURCE_3) -o $(OBJECT_3)
+	gcc -c $(CFLAGS) $(SOURCE_3) -g -o $@ # -g for debugging options in gdb
 
 # main.out
 $(EXECUTABLE_MAIN): $(OBJECT_1) $(OBJECT_2) $(OBJECT_3)
-	g++ $(OBJECT_1) $(OBJECT_2) $(OBJECT_3) -g -o $@
+#	g++ $(OBJECT_1) $(OBJECT_2) $(OBJECT_3) -g -o $@
+	g++ $(LDPATH) $(OBJECT_1) $(OBJECT_2) $(OBJECT_3) -g -o $@ $(LDFLAGS)
 
 .PHONY: clean
 clean:
