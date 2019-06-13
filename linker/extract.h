@@ -18,7 +18,7 @@
 	// just for debugging and printing the values of a matrix (vector of vectors)
 	void printMatrix(vector<vector<Real> > &matrix);
 
-	// Modify per will
+	// Modify per will 
 	void testMethod();
 
 #endif

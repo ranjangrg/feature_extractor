@@ -31,23 +31,26 @@ EXECUTABLE_1=extract.out
 EXECUTABLE_2=analyseAudio.out
 
 SOURCE_1=extract.cpp
+HEADER_1=extract.h
 SOURCE_2=analyseAudio.c
+HEADER_2=analyseAudio.h
 SOURCE_3=Wrapper.cc
+HEADER_3=Wrapper.h
 
 OBJECT_1=extract.o
 OBJECT_2=analyseAudio.o
 OBJECT_3=Wrapper.o
 
 # extract.o
-$(OBJECT_1): $(SOURCE_1)
+$(OBJECT_1): $(SOURCE_1) $(HEADER_1)
 	g++ -c $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $@ $(LDFLAGS) # -g for debugging options in gdb
 
 # analyseAudio.o
-$(OBJECT_2): $(SOURCE_2)
+$(OBJECT_2): $(SOURCE_2) $(HEADER_2)
 	gcc -c $(CFLAGS) $(SOURCE_2) -g -o $@ # -g for debugging options in gdb
 
 # wrapper.o
-$(OBJECT_3): $(SOURCE_3)
+$(OBJECT_3): $(SOURCE_3) $(HEADER_3)
 	g++ -c $(SOURCE_3) -o $(OBJECT_3)
 
 # main.out

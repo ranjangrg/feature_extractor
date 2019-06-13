@@ -7,7 +7,7 @@
 		#include <stdlib.h>
 	#endif
 
-	#ifndef __WRAPPER_H
+	#ifndef __WRAPPER_H 
 		#include "./Wrapper.h"
 	#endif
 #endif
