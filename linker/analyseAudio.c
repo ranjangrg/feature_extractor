@@ -1,6 +1,5 @@
-#ifndef __ANALYSE_AUDIO_H
-	#include "analyseAudio.h"
-#endif
+#include "analyseAudio.h"
+#include "Wrapper.h"
 
 // just for testing
 void testArray() {
@@ -24,6 +23,7 @@ void testArray() {
 int main() {
 	// Testing method
 	//testArray();
+	testInC();
 
 	return 1;
 }

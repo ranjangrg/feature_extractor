@@ -26,8 +26,10 @@ INCLUDES+= -D__STDC_CONSTANT_MACROS
 LDPATH+= -L/usr/local/lib
 
 EXECUTABLE_1=extract.out
+EXECUTABLE_2=streamReader.out
 
 SOURCES_1=extract.cpp
+SOURCES_2=streamReader.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
@@ -35,7 +37,11 @@ OBJECTS=$(SOURCES:.cpp=.o)
 	
 extract: $(SOURCES_EXT1)
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_1) -g -o $(EXECUTABLE_1) $(LDFLAGS) # -g for debugging options in gdb
+	
+streamReader: $(SOURCES_EXT1)
+	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_2) -g -o $(EXECUTABLE_2) $(LDFLAGS) # -g for debugging options in gdb
 
 clean:
 	# quiet clean-up
 	-@rm $(EXECUTABLE_1)  2> /dev/null || true;
+	-@rm $(EXECUTABLE_2)  2> /dev/null || true;
