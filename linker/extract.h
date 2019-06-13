@@ -31,6 +31,8 @@
 		vector<Real> frame, windowedFrame;		// holds framed signal (+windowed)
 		vector<Real> spectrum, mfccCoeffs, mfccBands;	// holds spectrum signal, mfcc etc
 		Real totalEnergy;				// holds the total energy within the signal
+		Real centroidSCT;				// holds the spectral centroid time of the signal
+		Real pitch, pitchConfidence;			// holds fundamental pitch and its confidence with the value
 		
 		Pool pool;		// used to store values esp output(s)
 		
@@ -42,6 +44,8 @@
 		Algorithm* mfcc;	// mfcc algorithm factory
 		Algorithm* delta;	// delta algorithm factory
 		Algorithm* energy;	// energy algorithm factory
+		Algorithm* sct;		// spectral centroid time algortihm factory
+		Algorithm* pitchY;	// PitchYin algorithm factory; NOTE: takes quite a while to process
 		
 		// Constructors and Destructors
 		FeatureExtractor();

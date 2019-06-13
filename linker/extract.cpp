@@ -52,7 +52,7 @@ void printPool2DReal(Pool &pool, string name) {
 	}	
 }
 
-void printPoolSingleReal(Pool &pool, string name) {
+void printPool1DReal(Pool &pool, string name) {
 	cout << "Pool value for \"" << name << "\": " << pool.value<vector<Real> >(name) << endl;
 }
 
@@ -67,6 +67,15 @@ void FeatureExtractor::connectFactories() {
 	// audioBuffer -> Total energy
 	energy->input("array").set(audioBuffer);
 	energy->output("energy").set(totalEnergy);
+	
+	// audioBuffer -> Spectral Centroid Time
+	sct->input("array").set(audioBuffer);
+	sct->output("centroid").set(centroidSCT);
+	
+	// audioBuffer -> pitchYin
+	pitchY->input("signal").set(audioBuffer);
+	pitchY->output("pitch").set(pitch);
+	pitchY->output("pitchConfidence").set(pitchConfidence);
 	
 	// FrameCutter -> Windowing -> Spectrum
 	fc->input("signal").set(audioBuffer);
@@ -88,10 +97,21 @@ void FeatureExtractor::connectFactories() {
 void FeatureExtractor::computeWhole() {
 	audio->compute();
 	
-	energy->compute();	// calculating total energy in signal
+	energy->compute();	// calculating total energy of the signal
 	pool.add("totalEnergy", totalEnergy);
-	printPoolSingleReal(pool, "totalEnergy");
-//	cout << "Total energy is " << pool.value<vector<Real> >("totalEnergy") << endl;
+	printPool1DReal(pool, "totalEnergy");
+	
+	sct->compute();		// calculating SCT of the signal
+	pool.add("SCT", centroidSCT);
+	printPool1DReal(pool, "SCT");
+	
+//	pitchY->compute();	// calculating pitch of the signal
+//	if (pitch != 0) {
+//		pool.add("pitch", pitch);
+//		pool.add("pitch-confidence", pitchConfidence);
+//		printPool1DReal(pool, "pitch");
+//		printPool1DReal(pool, "pitch-confidence");
+//	}
 	
 	long unsigned currentFrameCount = 0;	// variable to keep track of number of frames
 
@@ -116,9 +136,7 @@ void FeatureExtractor::computeWhole() {
 				
 		currentFrameCount++; // increment the current frame index
 	}
-//	cout << "mfcc is " << pool.value<vector<vector<Real> > >("mfcc") << endl;
 	printPool2DReal(pool, "mfcc");
-//	printPool2DReal(pool, "totalEnergy");
 }
 
 // Constructor - init
@@ -146,8 +164,12 @@ FeatureExtractor::FeatureExtractor() {
 				"sampleRate", sampleRate,
 				"inputSize", hopSize+1,
 				"type", "magnitude"); // specify type of input spectrum				
-	delta = factory.create("Derivative");
+	delta = factory.create(	"Derivative");
 	energy = factory.create("Energy");
+	sct = factory.create(	"SpectralCentroidTime",
+				"sampleRate", sampleRate);
+	pitchY = factory.create("PitchYin",
+				"sampleRate", sampleRate);
 	
 	connectFactories();	// connect all the factories and algorithms here
 }
@@ -160,6 +182,8 @@ FeatureExtractor::~FeatureExtractor() {
 	delete spec;
 	delete mfcc;
 	delete delta;
+	delete sct;
+	delete pitchY;
 	cout << "Destroying FeatureExtractor" << endl;
 	essentia::shutdown();
 }
