@@ -25,6 +25,8 @@ INCLUDES+= -D__STDC_CONSTANT_MACROS
 
 LDPATH+= -L/usr/local/lib
 
+EXECUTABLE_MAIN=main.out
+
 EXECUTABLE_1=extract.out
 EXECUTABLE_2=analyseAudio.out
 
@@ -34,22 +36,23 @@ SOURCE_3=Wrapper.cc
 
 OBJECT_1=extract.o
 OBJECT_2=analyseAudio.o
-OBJECT_3=wrapper.o
+OBJECT_3=Wrapper.o
 
-extract: $(SOURCE_1)
-	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $(EXECUTABLE_1) $(LDFLAGS) # -g for debugging options in gdb
+# extract.o
+$(OBJECT_1): $(SOURCE_1)
+	g++ -c $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $@ $(LDFLAGS) # -g for debugging options in gdb
 
-analyseAudio: $(SOURCE_2)
-	gcc $(CFLAGS) $(SOURCE_2) -g -o $(EXECUTABLE_2) # -g for debugging options in gdb
+# analyseAudio.o
+$(OBJECT_2): $(SOURCE_2)
+	gcc -c $(CFLAGS) $(SOURCE_2) -g -o $@ # -g for debugging options in gdb
 
-wrapper: $(SOURCE_3)
+# wrapper.o
+$(OBJECT_3): $(SOURCE_3)
 	g++ -c $(SOURCE_3) -o $(OBJECT_3)
-	
-main: $(SOURCE_1) $(SOURCE_2)
-	g++ -c $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCE_1) -g -o $(OBJECT_1) $(LDFLAGS) 
-	g++ -c $(SOURCE_3) -o $(OBJECT_3)
-	gcc -c $(SOURCE_2) -g -o $(OBJECT_2)
-	g++ $(OBJECT_1) $(OBJECT_2) $(OBJECT_3) -g -o main.out
+
+# main.out
+$(EXECUTABLE_MAIN): $(OBJECT_1) $(OBJECT_2) $(OBJECT_3)
+	g++ $(OBJECT_1) $(OBJECT_2) $(OBJECT_3) -g -o $@
 
 .PHONY: clean
 clean:
@@ -60,3 +63,4 @@ clean:
 	-@rm $(OBJECT_2)  2> /dev/null || true;
 	-@rm $(EXECUTABLE_3)  2> /dev/null || true;
 	-@rm $(OBJECT_3)  2> /dev/null || true;
+	-@rm $(EXECUTABLE_MAIN) 2> /dev/null || true;
