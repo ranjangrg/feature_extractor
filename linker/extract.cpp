@@ -36,6 +36,8 @@ void printPool1DReal(Pool &pool, string name) {
 // connects relevant factories i.e. set input, output etc.
 void FeatureExtractor::connectFactories() {
 	audioF->output("audio").set(audioBuffer);
+	// if we don't want to read from audio algorithm factory, 
+	// we just have to NOT run `audioF->compute()` 
 	
 	// audioBuffer -> Total energy
 	energyF->input("array").set(audioBuffer);
@@ -68,7 +70,8 @@ void FeatureExtractor::connectFactories() {
 
 // compute Algorithms
 void FeatureExtractor::computeWhole() {
-	audioF->compute();	// comp[uting data from audio source (factory)
+	audioF->compute();	// computing data from audio source (factory)
+	// if no audio algorithm factory, just fill the values within variable 'audioBuffer'
 	
 	energyF->compute();	// calculating total energy of the signal
 	pool.add("totalEnergy", totalEnergy);
