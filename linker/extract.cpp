@@ -122,28 +122,28 @@ FeatureExtractor::FeatureExtractor() {
 	hopSize = (int)(sampleRate/4); 
 	nMFCCCoeff = 12; 
 	AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
-	audioF = factory.create(	"MonoLoader",
-				"filename", "../audio/sound.flac",
-				"sampleRate", sampleRate);
-	fcF    = factory.create(	"FrameCutter",
-				"frameSize", frameSize,
-				"hopSize", hopSize,
-				"startFromZero", true,
-				"lastFrameToEndOfFile", true);
-	wF     = factory.create(	"Windowing",
-				"type", "hann");
-	specF  = factory.create(	"Spectrum"); // produces a magnitude spectrum (NOT power)
-	mfccF  = factory.create(	"MFCC",
-				"numberCoefficients", nMFCCCoeff,
-				"sampleRate", sampleRate,
-				"inputSize", hopSize+1,
-				"type", "magnitude"); // specify type of input spectrum				
-	deltaF = factory.create(	"Derivative");
+	audioF	= factory.create("MonoLoader",
+				 "filename", "../audio/sound.flac",
+				 "sampleRate", sampleRate);
+	fcF	= factory.create("FrameCutter",
+				 "frameSize", frameSize,
+				 "hopSize", hopSize,
+				 "startFromZero", true,
+				 "lastFrameToEndOfFile", true);
+	wF	= factory.create("Windowing",
+				 "type", "hann");
+	specF	= factory.create("Spectrum"); // produces a magnitude spectrum (NOT power)
+	mfccF 	= factory.create("MFCC",
+				 "numberCoefficients", nMFCCCoeff,
+				 "sampleRate", sampleRate,
+				 "inputSize", hopSize+1,
+				 "type", "magnitude"); // specify type of input spectrum				
+	deltaF 	= factory.create("Derivative");
 	energyF = factory.create("Energy");
-	sctF = factory.create(	"SpectralCentroidTime",
-				"sampleRate", sampleRate);
-	pitchYF = factory.create("PitchYin",
-				"sampleRate", sampleRate);
+	sctF	= factory.create("SpectralCentroidTime",
+				 "sampleRate", sampleRate);
+	pitchYF	= factory.create("PitchYin",
+				 "sampleRate", sampleRate);
 	
 	connectFactories();	// connect all the factories and algorithms here
 }
