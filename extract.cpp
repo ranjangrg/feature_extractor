@@ -181,6 +181,7 @@ int main(int argc, char* argv[]) {
 	/////// PARAMS //////////////
 	int sampleRate = 32052;				// sample rate of the audio signal
 	int frameSize = (int)(sampleRate/2);		// size of a frame for FrameCutter
+	int specSize = (int)(frameSize/2) + 1;		
 	int hopSize = (int)(sampleRate/4);		// hop size for FrameCutter
 	int nCoeff = 12;				// number of MFCC coefficients
 	string mfccInputSpectrumType = "magnitude"; 	// normally spectrum() produces a magnitude spectrum
@@ -208,11 +209,12 @@ int main(int argc, char* argv[]) {
 	Algorithm* w     = factory.create(	"Windowing",
 						"type", "hann");
 
-	Algorithm* spec  = factory.create(	"Spectrum"); // produces a magnitude spectrum (NOT power)
+	Algorithm* spec  = factory.create(	"Spectrum",
+						"size", specSize); // produces a magnitude spectrum (NOT power)
 	Algorithm* mfcc  = factory.create(	"MFCC",
 						"numberCoefficients", nCoeff,
 						"sampleRate", sampleRate,
-						"inputSize", hopSize+1,
+						"inputSize", specSize,
 						"type", mfccInputSpectrumType); // specify type of input spectrum
 					
 	Algorithm* delta = factory.create("Derivative");
