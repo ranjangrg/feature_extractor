@@ -35,7 +35,9 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 .PHONY: extract
 	
-extract: $(SOURCES_EXT1)
+# list xxx: $(src1) $(src2)
+# 'make' checks for changes in src1 and src2 file when 'make' command is run again
+extract: $(SOURCES_EXT1) 
 	g++ $(CFLAGS) $(INCLUDES) $(LDPATH) $(SOURCES_1) -g -o $(EXECUTABLE_1) $(LDFLAGS) # -g for debugging options in gdb
 	
 streamReader: $(SOURCES_EXT1)
